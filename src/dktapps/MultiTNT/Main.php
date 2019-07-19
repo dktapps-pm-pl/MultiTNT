@@ -8,8 +8,8 @@ use pocketmine\block\TNT;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\item\FlintSteel;
-use pocketmine\level\Level;
 use pocketmine\plugin\PluginBase;
+use pocketmine\world\World;
 
 class Main extends PluginBase implements Listener{
 
@@ -22,7 +22,7 @@ class Main extends PluginBase implements Listener{
 		$item = $event->getItem();
 		if($block instanceof TNT and $event->getAction() === PlayerInteractEvent::RIGHT_CLICK_BLOCK and $item instanceof FlintSteel){
 			/** @var TNT[] $tnt */
-			$tnt = [Level::blockHash($block->x, $block->y, $block->z) => $block];
+			$tnt = [World::blockHash($block->x, $block->y, $block->z) => $block];
 			$this->searchForTNT($tnt, $block);
 			foreach($tnt as $block){
 				$block->ignite(80);
@@ -33,7 +33,7 @@ class Main extends PluginBase implements Listener{
 
 	private function searchForTNT(array &$tnt, TNT $current) : void{
 		foreach($current->getAllSides() as $side){
-			if($side instanceof TNT and !isset($tnt[$hash = Level::blockHash($side->x, $side->y, $side->z)])){
+			if($side instanceof TNT and !isset($tnt[$hash = World::blockHash($side->x, $side->y, $side->z)])){
 				$tnt[$hash] = $side;
 				$this->searchForTNT($tnt, $side);
 			}
