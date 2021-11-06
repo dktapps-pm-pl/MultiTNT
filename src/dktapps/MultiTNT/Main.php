@@ -21,19 +21,24 @@ class Main extends PluginBase implements Listener{
 		$block = $event->getBlock();
 		$item = $event->getItem();
 		if($block instanceof TNT and $event->getAction() === PlayerInteractEvent::RIGHT_CLICK_BLOCK and $item instanceof FlintSteel){
+			$blockPos = $block->getPosition();
 			/** @var TNT[] $tnt */
-			$tnt = [World::blockHash($block->x, $block->y, $block->z) => $block];
+			$tnt = [World::blockHash($blockPos->x, $blockPos->y, $blockPos->z) => $block];
 			$this->searchForTNT($tnt, $block);
-			foreach($tnt as $block){
-				$block->ignite(80);
+			foreach($tnt as $otherTNT){
+				$otherTNT->ignite(80);
 			}
-			$event->setCancelled();
+			$event->cancel();
 		}
 	}
 
+	/**
+	 * @param TNT[] $tnt
+	 */
 	private function searchForTNT(array &$tnt, TNT $current) : void{
 		foreach($current->getAllSides() as $side){
-			if($side instanceof TNT and !isset($tnt[$hash = World::blockHash($side->x, $side->y, $side->z)])){
+			$position = $side->getPosition();
+			if($side instanceof TNT and !isset($tnt[$hash = World::blockHash($position->x, $position->y, $position->z)])){
 				$tnt[$hash] = $side;
 				$this->searchForTNT($tnt, $side);
 			}
