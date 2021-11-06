@@ -35,12 +35,18 @@ class Main extends PluginBase implements Listener{
 	/**
 	 * @param TNT[] $tnt
 	 */
-	private function searchForTNT(array &$tnt, TNT $current) : void{
-		foreach($current->getAllSides() as $side){
-			$position = $side->getPosition();
-			if($side instanceof TNT and !isset($tnt[$hash = World::blockHash($position->x, $position->y, $position->z)])){
-				$tnt[$hash] = $side;
-				$this->searchForTNT($tnt, $side);
+	private function searchForTNT(array &$tnt, TNT $first) : void{
+		/** @phpstan-var \SplQueue<TNT> $visitQueue */
+		$visitQueue = new \SplQueue();
+		$visitQueue->enqueue($first);
+		while(!$visitQueue->isEmpty()){
+			$current = $visitQueue->dequeue();
+			foreach($current->getAllSides() as $side){
+				$position = $side->getPosition();
+				if($side instanceof TNT and !isset($tnt[$hash = World::blockHash($position->x, $position->y, $position->z)])){
+					$tnt[$hash] = $side;
+					$visitQueue->enqueue($side);
+				}
 			}
 		}
 	}
